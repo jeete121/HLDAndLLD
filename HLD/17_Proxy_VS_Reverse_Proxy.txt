@@ -1,0 +1,105 @@
+Proxy Servers
+
+
+Proxy Server::
+
+Proxy is something which takes requests on the behalf of someone. It acts as an intermediate between clients and severs.
+
+Client1----->   Proxy Server ----> Server 
+       <-----                <----
+Client2<-----                <-----
+
+
+Proxy can take request from more than one clients and ask the server to get the desired data.
+
+Types of Proxy Server
+1. Forward Proxy
+ It is sometime known as simple proxy.
+
+Group of networks
+/clients
+
+Client1
+
+Client2------> Proxy  --->Internet-----> Server
+       <-----  Forward <---       <-----
+Client3
+
+Forward proxy hides the client networks.
+
+Servers they don't know the client internal network.
+Proxy will send its own Ip address to the outer world, not the actual ip of the client.
+No server can knows the ip of client. They only knows the ip of proxy server.
+
+Advantages::
+1. It gives anonymous.
+2. Grouping of requests.
+3. Access restrited data/content.
+4. Security
+5. Caching
+
+Disadvantage:
+1. It works on application level.
+For Example if you have 10 applications, then for each application you have to setup a proxy.
+2. 
+
+2. Reverse Proxy 
+
+
+Internet----> Reverse Proxy-----> Server1
+                                  Server2
+                                  Server3
+
+When ever request come from internet it is not allowed directly to the servers.
+It goes to reverse proxy. And reverse proxy takes responsibility of talk to server.
+
+Advantage::
+
+1. Security(they don't know the server ip)
+they only knows reverse proxy ip. It can handle DDoS attack.
+CDN is a reverse proxy.
+2. Caching (It first check the cache to complete the request).
+3. Latency
+4. Load Balancer
+
+
+
+
+Proxy VS VPN
+
+Proxy::
+
+Client---> Proxy----> Server
+          anonymous(It hides Ip address)
+          Caching
+          Logging
+
+VPN::
+
+Client----> VPN client----------
+                     VPN tunnel   VPN Server 
+                     ------------
+
+VPN client do encryption of data. All the data goes as encrypted data into VPN tunnel.
+
+
+Reverse Proxy Vs Load Balancer
+
+Proxy::
+It do IP anonymous,Cachine,Logging.
+Reverse Proxy can act as a load balancer.
+
+Load Balancer::
+
+Load Balancer can not be a proxy.
+
+
+Proxy VS FireWall
+
+FireWall::
+It can do packet scanning.
+
+Proxy::
+It works on application level.
+It mainly used as anonymous.
+Proxy can act as firewall also.

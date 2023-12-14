@@ -1,0 +1,156 @@
+Design Idempotency Handler
+
+
+Idempotency::
+
+Idempotency help us to take care of duplicate requests.
+
+Concurrency::
+
+There is one resouce and multiple users are trying to access that resource.
+For Example:: In BookMyShow, there is a seat and many users are trying to book that seat, this problem is known as concurrency problem.
+
+
+
+
+Idempotency::
+
+It enable clients to safely retry an operation without woryig about the side-effect of operation can cause.
+
+
+Opearation
+
+Adding an item into the cart.
+
+---->POST---------   -------> DB
+         RETRY/Duplicate   It should not create
+                            another row.
+         ---->
+
+You can retry any number of times as you want but in DB there is only one record.
+
+
+1. By Default GET,PUT, DELETE these are idempotent in nature.
+
+2. POST request is not Idempotent.
+
+
+
+There are two types of side-effect
+1. Sequentail
+ 
+In this client send a request and timeout happens. But server is processing the request.
+And client send the new request. and client processed the first request successfully.
+           POST
+ Client ---------------> Server  Processing
+    |    <-- ----- ----    |   ---
+    |                      |
+    |   Time Out happens   |   ---
+    |                      |   ---
+    |    POST/duplicate    |   Processed
+    |    --------------->  |  handle this
+
+2. Parallel
+
+In this client makes two requests parallely.
+
+ 
+           POST
+ Client ---------------> Server  Processing
+    |                      |   
+    |                      |    
+    |                      |   
+    |    POST/duplicate    |  
+    |    --------------->  |  handle this
+   Only one request should be processed.
+
+
+
+Approach for Idempotency Handling:
+
+Using Idempotency Key (It is unique id or say UUID)
+
+Aggrement with Client
+1. Client should generate the idempotency key
+2. For each different operation key new idempotency key should be generated.
+
+
+
+Idepotency key has a life-cycle.
+1. Created/Acquire
+2. Conumse/Claimed 
+
+
+       1 
+Client-----> generate Idemotency Key
+  |
+  |2 Set this idempotency Key 
+  |     in the request header
+  |        and call the server.
+  | 
+  | 
+  |         3                 NO
+Server----------> Validation---->HTTP 400
+                   IK present        Validation
+                    or not            Error
+in header it       |
+will get IK      4 |YES
+                           Put Mutex here
+                   |         /Synchronize
+                   Server will read this 
+                   IK in the DB
+                    |
+                    |
+It will check YES   |        NO  
+the state   <----If present----> It will PUT
+  |         5      in DB?    5 an entry in DB
+  |                              |
+  |  consumed                    |6
+State--->HTTP 200                |
+|created                         |
+|                                |
+409(Conflict)                    |
+                    If operation is success it will conusme/claimed the IK.
+and it will change the state consume.
+                   |
+                   |
+                   |
+                 HTTP 201
+
+When duplicate request comes it starts from step 2.
+In this client will retry with same IK.
+
+
+It will handle sequential comfortably.
+
+
+
+When two requests came parallely/ at the same time, Then the flow will come it 6 step and it will create 2 requets with success.
+
+
+To Solve this problem
+is the mutual exclusion
+locking part.
+
+Our critical section
+
+is step 4---> step 5(No)----> step6
+
+Mutex::
+It will  acquire the lock
+Release the lock
+Semaphore::
+It will lock and unlock.
+
+
+Follow up Question::
+
+Client ------> S1  Cache     --->DB1 
+       ------> S2            --->DB2
+       ------> S3  Cache
+                    lock        --->DB3
+       ------> S4            --->DB4
+
+
+Using Cache to schronize the cache 
+                    

@@ -1,0 +1,247 @@
+Cache in Depth::
+
+What is Cachine?
+1. Cachine is a technique to store frequently used data in a fast access memory rather than accessing data every time from slow access memory.
+2. This makes our system very fast.
+3. It helps to reduce the latency.
+4. It also helps to achive the fault tolerance.
+
+There are different types of cachine present at different layer of the system like:
+1. Client side Caching(Browser Caching).
+2. CDN(used to store the static data).
+3. Load Balancer
+4. Server Side Application Caching(like Redis etc.)
+
+
+Client---->LB---> App----> Cache-----> DB
+                  Server   (Redis)
+
+
+
+What is distributed caching?
+
+
+Single server Cache
+Cache Server----> App 1
+            ----> App 2
+            ----> App 3
+
+Limitations::
+1. Scalability
+2. Single point of failure. If cache server goes down/fail then caching capability gone.
+
+
+
+Distributed Caching::
+
+In this we have cache pool. In which we have lots of cache server.
+
+
+App Server----> Cache Client-----> Cache Pool
+                             -----> (Many Cache
+                            |        Server)
+                            |
+App Server------>Cache Client
+             
+
+In this App Server contact to its Cache Client which will select the Cache Server from Cache pool by using consitent hashing technique to allocate the cache server to the particular App Server.
+
+
+Caching Strategy
+
+1. Cache Aside::
+
+a. Application first check like cache.
+b. If data found in Cache, it's called Cache Hit and data is returned to the client.
+c. If Data is not found in Cache, its called Cache Miss. Application fetch the data from DB, store it back to Cache and data is returned to the client.
+
+
+       (Application)
+Client   Server       Cache       DB
+|-------->|             |          |
+|  Read   |------------>|          |
+| Request | Read from   |          |
+|         |   cache     |          |
+|         |             |          |
+|         |<------------|          |
+|         |  Cache Hit  |          |
+|         |             |          |
+|         |<------------|          |
+|         |  Cache Miss |          |
+|         |             |          |
+|         |-------------|--------->|
+|         | Fetch Data  | from DB  |
+|         |             |          |
+|         |             |          |
+|         |------------>|          |
+|         | Write into  |          |
+|         |  Cache      |          |
+|         |             |          |
+|         |             |          |
+|<--------|             |          |
+|  Send   |             |          |
+| Response|             |          |
+ 
+PROS::
+1. Good approach for Heavy Read application.
+2. Even Cache is down, request will not fail, as it will fetch the data from DB.
+3. Cache Document data structure can be different than the Data present in DB.
+
+CONS::
+1. For new data read, there will always be CACHE-MISS first.(to resolve this, generally we can pre-heat the cache).
+2. Without appropriate caching is not used during Write operation. There is a chance of Inconsistency between Cache and DB.
+
+
+
+2. Read Through Cache::
+
+a. Application first check the cache.
+b. If data is found in Cache, it's called Cache Hit and data is returned to the client.
+c. If Data is not found in Cache, its called Cache Miss. Cache Library itself fetch the data from DB, store it back to Cache and data is returned to the application.
+
+
+      (Application)
+Client   Server       Cache       DB
+|-------->|             |          |
+|  Read   |------------>|          |
+| Request | Read from   |          |
+|         |   cache     |          |
+|         |             |          |
+|         |<------------|          |
+|         |  Cache Hit  |          |
+|         |             |          |
+|         |             |          |
+|         |             |--------->|
+|         |             |Cache Miss|
+|         |             |Fetch Data|
+|         |-------------|          |
+|         |             |<---------|
+|         |             |Write into|
+|         |             | Cache    |
+|         |<------------|          |
+|         |             |          |
+|         |             |          |
+|         |             |          |
+|         |             |          |
+|<--------|             |          |
+|  Send   |             |          |
+| Response|             |          |
+
+
+PROS::
+1. Good approach for Heavy Read application.
+2. Logic of fetching the data from DB and updating Cache is separated from the application.
+
+
+CONS::
+1. For new data read, there will always be CACHE-MISS first.(to resolve this, generally we can pre-heat the cache)
+2. Without appropriate caching is not used during Write operation. There is a chance of Inconsitency between Cache and DB.
+3. Cache Document structure should be same as DB table.
+
+
+3. Write Around Cache::
+
+a. Directly writes data into the DB.
+b. It do not update the Cache.
+c. It makes Cache invalidate(dirty).
+
+
+             (Application)
+Client        Server         Cache      DB
+ |              |              |         |
+ | Write Request|              |         |
+ |------------->|Directly Write| to DB   |
+ |              |--------------|-------->|
+ |              |              |         |
+ |              |Invalidate the|         |
+ |              |Data in Cache |         |
+ |              |------------->|         |
+ |              |              |         |
+ |              |              |         |
+ |              |              |         |
+
+During GET calls it will check if the data is dirty or not if the data is marked as dirty don't read it.
+
+
+PROS::
+1. Good approach for Heavy Read application.
+2. Resolves Inconsistency problem between Cache and DB.
+
+CONS::
+1. For new data read, there will aslways be CACHE-MISS first.(to resolve this, generally we can pre-heat the cache)
+2. If DB is down, Write operation will fail.
+
+
+
+4. Write Through Cache::
+
+a. First Writes data into the Cache.
+b. Then in Synchronous  Writes data into the DB.
+
+             (Application)
+Client        Server         Cache      DB
+ |              |              |         |
+ | Write Request|              |         |
+ |------------->|First Write   |         |
+ |              |into Cache    |         |
+ |              |------------->|         |
+ |              |              |         |
+ |              |Then, Write   |         |
+ |              |into DB       |         |
+ |              |--------------|-------->|
+ |              |              |         |
+ |              |              |         |
+ |              |              |         |
+
+In this both should be success. Both cache and DB writes should success or both should fail.
+
+
+PROS::
+1. Cache and DB always remain consistent.
+2. Cache Hit chance increases a lot.
+
+CONS::
+1. Alone is not useful, it will increase the latency.(that's why its always used with Read through or cache aside cache)
+2. 2 Phase commit, need to be supported with this. To maintain the transactional property.
+3. If DB is down, write operation will fail.
+
+
+
+
+5. Write Back(or Behind) Cache::
+
+a. First Writes data into the Cache.
+b. Then in Asynchronous Writes data into the DB.
+
+
+             (Application)
+Client        Server       Cache     DB   Queue
+ |             |            |         |       | 
+ |Write Request|            |         |       |
+ |------------>|First Write |         |       |
+ |             |into Cache  |         |       |
+ |             |----------->|         |       |
+ |             |            |         |       |
+ |             |Then, push  |         |       |
+ |             |the message |         |       |
+ |             |to Queue    |         |       |
+               |------------|---------|------>|
+ |             |            |         |       |
+ |             |            |         |<------|
+ |             |            |         |Write  |
+ |             |            |         |into DB|
+
+
+
+
+PROS::
+1. Good for Write heavy application.
+2. Improves the Write operation Latency. As writing into the DB happens asynchronously.
+3. Cache Hit chance increase a lot.
+4. Gives much better performance when used with read through cache.
+5. Even when DB fails, Write operation still works.
+
+CONS::
+
+1. If Data is removed from Cache and DB write still not happens, then there is a chance of an issue.(it is handled by keeping the TAT of cache little higher like 2 days)
+

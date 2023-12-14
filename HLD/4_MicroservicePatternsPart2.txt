@@ -1,0 +1,210 @@
+1. Strangler Pattern
+2. SAGA Pattern
+3. CQRS Pattern
+
+
+Strangler Pattern::
+
+It is used when we refatoring to microservice from monolithic service.
+
+
+
+A  ---------------> A1 A2 A3 A4 ...
+
+|               |
+    Contoller
+
+        |
+
+     API traffic
+
+
+Till now we only enable one flow into microservice from monolithic. 
+
+Then that complete flow or 10% traffic we can give to microservice.
+
+That controller will decide where to send to monolithic or microservice.
+
+If microservice failed then we can send all requests to monolithic and down the microservice flow to 0%.
+
+If my request passed then we will increase the traffic to microservice.
+
+We need to decompose small small components and send traffic to microservices.
+
+Once complete migration happened successfully then we can delete the monolithic application.And all requests will be fullfilled by microservices.
+
+
+
+
+
+SAGA::
+
+(Data Management in Microservice)
+
+Database for each individual service.
+
+S1     S2     S3
+
+DB1    DB2    DB3
+
+SAGA/CQRS will help here.
+
+
+T1-T5      T6-T8       T9-T10
+
+S1          S2          S3
+
+Local       Local       Local
+txn          txn          txn
+ACID        ACID          ACID
+
+If make common ACID property it will be solved by SAGA pattern.
+
+Query join will solved by CQRS pattern.
+
+
+
+
+
+Shared Database.
+
+S1    S2     S3
+
+    Common DB
+
+
+1. If Service S1 have lot of data. In this scenario we need to scale whole data.
+
+2. If databse hase 10 tables. If S3 wants to delete a column from table t10 then S3 will not allow to delete column easily. We need to check complete dependency.
+
+Easy ::
+1. Query join is easy.
+2. Maintaing the transactional property.
+3. Easily maintain ACID property.
+
+
+
+
+DATABASE Per Service::
+
+One Service cannot query to other service DB. It will only query to its own DB.
+No Service can touch the DB of other service.
+if they want the data from other services they will call the API to get the data.
+
+
+S1    ---->     S2    --API-->          S3
+
+DB1              DB2            DB3
+
+Relational DB    NOSQL           Postgress
+  SQL            MongoDB
+
+
+
+IF there is more data in one db /or one service
+. Then we can scale only that service's DB. not the other.
+
+
+
+SAGA::
+
+Transaction:: Place an Order
+
+
+ORDER         INVENTORY     PAYMENT
+DB             DB            DB
+T1             T3            T5
+T2             T4            T6
+
+In this case we need to update all the DB.
+
+But if order DB created successfully and inventory also created successfully but payment failed.
+
+
+SAGA (Sequence of Local Transaction)
+
+
+
+S1----->Event<--- S2---->Event<--------S3
+        Fail Event<---  <---Fail Event<-----
+DB1               DB2                  DB3
+Rollback         Rollback             Rollback
+
+
+
+SAGA is of two types Choreography and Orchestration.
+
+
+
+Choreography::
+
+
+
+               ----->S1
+Message Event  <---->S2
+               <----> S3
+
+
+Drawback:: Cycle depency will happen in this case.
+
+Orchestrator::
+
+  
+
+Orchestration is the one who call S1 , and get the response and call S2 and get response.
+It will call S3 if S3 got failed then orchestrator will make sure to roll back S2 and S1....
+
+
+
+InterView Question::
+
+A user person A want to send 10 RS to person B.
+
+PA ---------Payment 10 RS ---------PB
+
+
+Payment::   PA    -10 RS 
+            PB    +10 RS
+
+Balance::   
+          PA 100 RS
+             -10 RS
+              90 RS
+
+Now payment failed
+
+In ths case payment will send an event. balance will given and rollback its DB to make the consistency.
+
+
+
+
+CQRS(Command Query Request Segregation)
+
+Command::   Create Update Delete
+Query::     Select
+
+
+
+S1                          S2
+
+DB                          DB
+
+
+
+
+           View
+
+
+Create, Update and Delete operation will happen to its own DB.
+
+Read will be happen into view (Common view)
+
+
+In th view data will be available of both the db.
+
+
+When there is create, update ,delete event will be published and view will listen and update its which is used for read query.
+
+DB rigger will be used to update the view.
+
+                 

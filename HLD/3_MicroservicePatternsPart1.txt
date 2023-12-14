@@ -1,0 +1,114 @@
+Microservice and its Patterns (Introduction) 
+and Decomposution Pattern discussion
+
+
+Monolithic   And Microservices
+
+Monolithic (Legacy Application)
+
+In monolithic all functionality in one application. It takes care of everything.
+
+Disadvantages::
+1. Overload IDE
+2. Scaling is very hard.
+3. It is very tight coupled application.
+4. One line change will impact many thing and need  complete testing and regression.
+5. Need to deploy complete application if there is one change.
+6. Debugging is hard.
+
+
+
+Microservices::
+
+All the disadvantage of monolithic is advantage of microservices.
+
+If only one sevice is heavy loaded then we can scale that component only not only the whole application.
+
+
+
+Disadvantages::
+1.Properly devide the components.It should be loosely coupled.If one service communitate to other servcie then latency will increase if we do not decompose the components property.
+
+2. If there is change in response or behaviour of one service then dependent service may break. 
+
+  S1 ---> S2 ---> S3 
+  X        X <---- change the repsone
+In this scenario monitoring is difficult.
+
+3. Transaction Management::
+
+Request--------> DB       A              B                  C
+ ACID
+    start-----> stop      DB             DB                 DB
+                        start--> stop   start--> stop      start--> stop
+
+
+
+In this case one transaction is not possible.
+
+If there is a failure in B service then we need to roll back in B as well in A if both are communicating and complete the request.
+Transaction management is little bit difficult.
+
+
+
+MicroSerices
+
+Micro    Service
+
+Small how much small.
+
+Decomposition::
+1. Decompose by bussiness capability.
+2. Decompose by subdomain.
+
+Database::
+Either create one database for all or create separate databae per Service
+
+1. Shared Database
+2. Database per service.
+Communication
+
+1. API commication
+2. By events.
+Integration
+
+Integrate with some other modules like API gateways.
+
+
+
+
+1. Decomposition Pattern::
+
+Need to devide large into small.
+
+1. decompose by subdomain(DDD) (Domain Drivern Desing)
+2. decompose by business capability(BC)
+
+Business Capability::
+
+Online Order System
+
+1. Order Management
+2. Product Management
+3. Account Management
+4. Login
+5. Billing
+6. Payment
+
+
+
+DDD(Domain Driven Design)::
+
+Order Management::
+A domain can have one or more than one microservice
+
+A -->Order Tracing
+B --> Order Placing
+C--------
+
+Payment Doamin::
+
+   A --> Forward Payment
+   B --> Reverse Payment  (Refund capability)
+ 
+

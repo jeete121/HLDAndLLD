@@ -1,0 +1,308 @@
+Scale 0 to Million Users::
+
+1. Single Server
+2. Application & Db Server Separation
+3. Load Balancer + Multiple Appliction Servers
+4. DataBase Replication
+5. CACHE
+6. CDN
+7. Data Center
+8. Message Queue
+9. DataBase Scaling
+
+
+1. Single Server
+
+Client
+Web/Mobile
+  |
+  |
+  |
+Server
+Application+DB
+
+
+2. Application & Db Server Separation
+
+
+ Client
+ Web/Mobile
+  |
+  |
+  |
+Application Sever  ---->Mid Tier
+  |
+  |
+  |
+
+  DB               ----> Data/DB Tier
+
+
+
+
+3. Load Balancer + Multiple Appliction Servers
+
+
+      Client
+    Web/Mobile
+         |
+         |
+ Load Balancer  It brings one layer of Security.
+         |
+         |
+         |
+Multiple APP server         ------> Mid Tier
+ App S1    App S2 ..... S3
+
+        |
+        |
+        |
+
+DB Server               ----> Data/DB Tier
+
+
+
+4. DataBase Replication
+
+
+
+
+      Client
+    Web/Mobile
+         |
+         |
+ Load Balancer  It brings one layer of Security.
+         |
+         |
+         |
+Multiple APP server         ------> Mid Tier
+ App S1    App S2 ..... S3
+
+        |
+        |
+        |
+
+Master    Slave
+ DB        DB's     ----> Data/DB Tier
+
+All write request should goto master DB.
+
+All read request should goto slave DB.
+
+
+If master DB got failed then any one of the slave DB will become master DB.
+
+There can be many slave DB.
+
+
+
+5. CACHE
+
+DB operations are very expensive.
+
+
+      Client
+    Web/Mobile
+         |
+         |
+ Load Balancer  It brings one layer of Security.
+         |
+         |
+         |
+Multiple APP server         ------> Mid Tier
+ App S1    App S2 ..... S3      -----> CACHE
+                                       TTL(Time to Live)
+        |
+        |
+        |
+
+Master    Slave
+ DB        DB's     ----> Data/DB Tier
+
+
+If cache hit then return from cache to end user.
+If cache miss then update in cache and return the data to end user.
+
+By this my performance will increase.
+
+
+
+6. CDN( Content Delivery Network)
+
+CDN does caching but all those who does caching are not CDN.
+              
+ USA(User)          India(User)
+            3md              1ms
+
+                      Data Center
+ SA(User) 2ms            India         4ms Japan(User)
+  
+
+  
+
+CDN Node
+ USA                                 CDN Node
+                INDIA                 Japan
+                   
+                   CDN Node
+
+          
+                   Original
+                     DB
+        
+CDN Node
+SA
+
+
+
+CDN does caching of static data. 
+Static data like html pages, videos, CSS files
+
+
+If a reques comes it will goto nearest CDN node to access the details. If it already called the database then it will return from there.
+
+If nearest CDN data not present then it will ask to another nearest CDN to access the data. if data present in that CDN then it will updates its own CDN and return the data.
+
+Otherwise it will goto the main database and update the CDN and return the data to end user.
+
+
+
+
+      Client         --------> CDN
+    Web/Mobile       <--------           
+         |
+         |
+ Load Balancer  It brings one layer of Security.
+         |
+         |
+         |
+Multiple APP server         ------> Mid Tier
+ App S1    App S2 ..... S3      -----> CACHE
+                                       TTL(Time to Live)
+        |
+        |
+        |
+
+Master    Slave
+ DB        DB's     ----> Data/DB Tier
+
+
+
+
+
+
+7. Data Center
+
+We can more data center.
+
+
+
+
+
+
+
+
+   Client         --------> CDN
+    Web/Mobile       <--------           
+         |
+         |
+ Load Balancer  It brings one layer of Security.
+         |
+         |
+         |
+
+Data Center A
+
+Multiple APP server         ------> Mid Tier
+ App S1    App S2 ..... S3      -----> CACHE
+                                       TTL(Time to Live)                   
+        |
+        |
+        |
+
+Master    Slave
+ DB        DB's     ----> Data/DB Tier
+
+
+
+
+Data Center B
+
+
+Multiple APP server         ------> Mid Tier
+ App S1    App S2 ..... S3      -----> CACHE
+                                       TTL(Time to Live)
+        |
+        |
+        |
+
+Master    Slave
+ DB        DB's     ----> Data/DB Tier
+
+
+Load Balancer depending on the basis of geo request. It will send to the nearest data center.
+
+DB repliation will happen in differen geo.
+
+
+
+
+
+8. Message Queue
+
+Example:: RabbitMQ
+          Kafka
+
+
+Producer::  ---->message Queue    --->Subcriber
+
+
+It brings the async nature in our code base.
+With Async nature we can process the request very fast.
+
+
+
+9. DataBase Scaling
+It is of two types
+
+Vertical   ::
+
+Master DB   Slave DB
+
+In this we have our DB will increase there capacity.
+
+Increase CPU
+Increare RAM
+
+ 
+Horizontal ::
+You can add more nodes.
+Its implementation is sharing.
+
+Sharing is of two types
+
+Horizontal::
+
+In table T1 there are 1000 rows
+It will divide on the basis of rows.
+
+T1                 T2
+ 
+R1  --R500        R501--R1000
+
+Vertical
+
+In vertical sharing we will divide on the basis of column.
+
+C1......C10     
+
+
+C1 to C5           C6 to C10
+
+
+
+Drawbacks of Sharding
+
+If one shard is heavy then we need to shard it again.
+
+

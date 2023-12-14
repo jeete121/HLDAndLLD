@@ -1,0 +1,165 @@
+SQL or NoSQL? Which one to use and when?
+
+
+
+SQL     NOSQL
+
+
+SQL::
+a. SQL(Structures Query Language), which is used to query relational database management system(RDBMS).
+b. It has table, rows, columns. And there are relation in multiple table.
+
+1. Structure
+a. It maintained table, rows, columns.
+b. It has predetermined Schema before you start using it.
+c. It has relations between different tables.
+
+2. Nature
+
+Server 1
+       
+   Table 1                Table 3
+   (Some data here)    (Some data here)
+
+             Table 2
+          (Some data here)
+Data present in all table should present on the same server.
+Whole data should present on the same server. Not on the different servers.
+
+It means nature is concentrated/centralized
+
+3. Scalability
+
+There are two ways to scale one is Vertical and another one is Horizontal.
+In Vertical:: We can increase the RAM Size.
+              We can increase the Storage 
+Capacity.
+It fits much better to SQL.
+
+In Horizontal:: We can do sharding.
+                We can do sharding on the basis of rows or columns.
+By sharding we can store partial data on the servers, means we can save some table data on server A and other on server B.
+
+And Even certain columns data present on server A and certain columsn data present on different server(server B) of the same table.
+It is not well supported in SQL.
+
+
+4. Property
+
+ACID properties
+A --> Atomicity
+C --> Consitency
+I --> Isolation
+D --> Durability
+
+It makes sure of data integrity/consistent.
+
+
+
+NOSQL:: 
+
+Non relational/NoSQL/Not Only SQL.
+
+1. Structure
+It works in unstructured data.
+
+a. Key-Value DB
+
+Key    Value( value is Opaque)
+
+Opaque::
+You only search/query based on key.
+We can't search/query based on value.
+
+b. Dcoument DB 
+
+It also has key and value.
+In value it has json,xml,etc..
+
+We can search/query based on key as well value.
+
+c. ColumnWise DB
+
+In this we have key, value is column value
+
+ key  --> Value
+           col1:: value
+           col2:: value
+            col3:: value
+
+Means Value is the list of column value pair.
+
+
+d. Graph DB
+
+Data is store in Node Edge
+
+      frient
+Node1 -----> node2---->
+     edge         ---->
+
+
+It is used in Social networking, Recommendation Engine.
+
+2. Nature
+
+Data can we store in multiple nodes/servers
+
+It is ditributed in nature.
+
+3. Scale
+
+Horizontal Scale.
+
+We can store any number of nodes/servers.
+
+
+4. Property
+It is following BASE.
+
+BA --> Basically Available
+S  --> Safe State
+E  --> Eventual Consitency
+
+
+BA --> Basically Available
+ 
+Basically available means it is highly available DB. It measn NoSQL is Highly available DB.
+
+Because data is present in distributed. Replication happens.
+
+
+S --> Safe State
+
+State of data can be change without interaction.
+
+Because sync will happen between nodes.
+
+
+E--> Eventual Consitency
+
+If we query we may get stale data/old data.
+If we query again we might get the latest data.
+
+
+
+When to use?
+
+  SQL                  NoSQL
+1.Flexible Query        1. Does not support.
+  functionlity            (In advance know
+                           which columns).
+ 
+2. Relational Nature    2.  Non Relational
+                            nature.
+
+3. Data integrity       3. ACID not followed
+   /Consitency (ACID)
+
+4. Availability         4. High availability
+                            /High Performance
+                           (with some 
+                             inconsitency)
+ 
+
+ 

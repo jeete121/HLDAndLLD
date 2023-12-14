@@ -1,0 +1,67 @@
+Application Layer
+1. Client Server Protocol
+   a. HTTP
+      1 Connection
+   b. FTP
+      2 Connections
+         Controller Connection
+         Data Connection
+   c. SMTP
+      SMTP is used for sending the mail.
+      IMAP is used to receiving the mail.
+   d. Web Sockets
+
+One Web browser which is called Client
+One Web Server which is called as a server
+
+Client ---> Request  ---> Server
+       <--- Response <---  
+
+
+
+WebSocket is different then HTTP,FTP,SMTP 
+
+WebSocket is  a bidirectional, means client can talk to server and server can talk to client
+
+Client ------>Server
+       <------
+
+Note:: WebSocket is not a peer to peer.
+
+
+       Server
+
+Client             Client
+
+In the above server can talk to both clients and both clients can tal to server but client to client communication is not possible.
+
+2. Peer to Peer Protocol
+   a. WebRTC
+
+
+       Server
+
+Client             Client
+
+
+In peer to peer all can talk to each other
+Server to client
+Client to client
+
+
+
+TransPort Layer/NetWork Layer
+1. TCP/IP
+In TCP/IP will maintain a virtual connection. Data will be transfered through that virtual connection. 
+In this data will delevered in order.
+There is an acknowledgement for each packets.
+2. UDP/IP
+In UDP/IP no connection will be maintined.
+It will send to multiple virtual connection.
+In this data will not be delevered in order.
+UDP is fast.
+There is an no acknowledgement.
+
+
+WebRTC Uses UDP to transfer data. It is used in video sharing applications.
+

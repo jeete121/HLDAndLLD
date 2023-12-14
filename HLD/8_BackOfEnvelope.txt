@@ -1,0 +1,156 @@
+Back Of Envelope
+
+Estimation of FaceBook
+
+What is Back of Envelope(BOE) Estimation?
+
+
+LB   ----> CDN
+     ----> Multiple Servers ---> DB (Capacity)
+     ----> CACHE
+
+
+
+Neither under utilize the resources. neither over utilize the resources.
+Other it will be wastes of resources.
+
+It drives our decision in system design.
+
+
+Consideration::
+1. These are rough numbers (T-Shirt Size). It is not acutual , It is just a rough estimation.
+
+2. Keep the assumption values simple.
+
+
+Cheat Sheet
+
+          Traffic    Storage
+ 
+3Zero     Thousand    KB
+6Zero     Million     MB
+9Zero     Billion     GB
+12 Zero   Trillion    TB
+15 Zero   Quadralion  PB
+
+
+
+Three things to compute::
+
+No Of Servers
+RAM
+Storage Capacity
+
+
+
+Tradoff  (CAP Theorem
+
+
+  X Million User * y MB  ===> (x*y) TB
+  6Zero            6Zero      12 Zero
+
+
+
+Estimate of FaceBook
+
+
+1. Traffic Estimation:: 
+
+
+Total User: --> 1Billion
+DAU(Daily Active User):--> 25% of total users
+                            250 Million Users
+
+In any system we have read operation and write operation.
+
+5+2--> 7 queries
+
+(250 Million Users * 7 Queries)/(60*60*24)==>864000 User  ~= 
+  DAU  
+
+==> 18 K query per second
+
+
+2. Storage Assumption::
+
+--> Every DAU doing 2 posts (every post of 250 characters)
+
+-->10 % of User upload 1 image(300 KB of size)
+
+1 Post--> 250 characters
+
+          250 *2 bytes==> 500 bytes
+
+for 2 post ==> 500*2==> 1000byes==> 1KB
+
+
+
+250 Million Users*1KB==>      250 GB
+    6Zero          3 Zero      
+
+
+25 Million Users * 300KB         7500 GB==> 
+   6Zeor              3Zero    
+
+                               ==> 7000GB==> 8TB
+ 
+
+
+Store data for 5years  ~==> 1825~==> 2000days
+
+POST 2000 *250 GB ==> 500TB 
+ 
+Image 2000*8T  ==> 16PB
+
+
+3. RAM Estimation::
+ For each user last 5 post we are putting in cache
+  1 Post==> 500 Bytes
+
+  5*500 ==> 2500 Bytes 
+
+250 Million * 2500Bytes==> 
+    DAU       (3KB)
+
+
+250 Million * 3KB   ==> 750 GB  (Memory Space)
+    6Zero      3Zero 
+
+
+If 1 machine can hold 75GB od data. Then we need 10 Machines for Cachine.
+
+
+Latency:: 95% ==> 500 milliseconds
+
+
+18K request/Second
+
+
+1 Server has 50 threads
+
+1Second ==> 2 (500 millisecond)
+
+==> 100 Request/Second
+
+
+How many Server
+==> 18K/100  ==> 180 servers
+
+
+
+TradOff(CAP)
+
+
+    C    A 
+       P
+
+In a particular time you can achive only two
+
+CA
+AP
+CP
+
+Drop consistency(C):: 
+
+AP
+ 

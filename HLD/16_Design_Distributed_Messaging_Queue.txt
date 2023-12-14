@@ -1,0 +1,144 @@
+Distributed Messaging Queue(like Kakfa,RabbitMq)
+
+Design Distributed Message Queue
+Design Kafka System
+Design RabbitMQ system
+How Messaging Queue works.
+
+
+1. What is Messaging Queue? Why it is needed and its advantages?
+
+          msg    
+Producer-------> Queue-----> Consumer
+
+Producer produces the message to the queue and consumer consumes the message from queue and process them.
+
+1. USER CASE:: Asynchronous nature
+                          
+
+E comm App---> Queue---> Send Notification--> Sends mail/sms to end user.
+
+Latency got reduced.
+
+2. Pace Matches.
+
+
+2. What is Point 2 Point and Pub/Sub Messaging Types?
+
+Point to Point::
+
+          msg       msg
+Publisher------> Queue---> Consumer A
+                      ---> Conusmer B
+
+In point to point the message is only consumed by only consumer.
+In point to point the message is conusmed only once.
+
+
+Pub/Sub::
+
+
+Publisher-- Exchange--> Queue1---> Consumer A
+                        Queue2---> Consumer B
+
+In pub/sub same message can be consumed by any number of consumers.
+
+
+3. How Messaging Queue Works?
+
+KAFKA
+1. Producer
+2. Consumer
+3. Consumer Group
+4. Topic
+5. Partition
+6. Offset
+7. Broker
+8. Cluster
+9. Zookeeper
+
+
+Producer-----> Broker-----> Consumer
+            (Kafka Server)
+
+Producer talks to broker(kafka server)
+Broker has topic. Every topic has names.
+broker can have many topics
+Inside a particular topic it has many partition.
+Inside a partition it has offsets.
+
+Cosumer reads from the partition.
+Data is stored in the partitions.
+Each consumer is part of one conusmer group.
+
+Broker means the node or server where kafka runs.
+Group of Broker is known as Cluster.
+
+
+Zookeeper helps to interact different brokers.
+
+Zookeeper keeps the committed offsets.
+
+
+When ever consumer goes down from the consumer group, then the other consumer which is active in the group will read from the next to last committed offset.
+
+
+
+
+4. What happen when Queue size limit is reached?
+We have multiple brokers(server).
+
+5. What happens to message, when Queue goes down?
+Nothing happen to the message. Because there is are replicas. So the follower will become the leader.
+
+6. What happens when consumer goes down?
+Another consumer takes over from the conusmer group and it starts reading from the last committed offset.
+
+7. What happen when consumer not able to process the message?
+                                      failure
+                                       queue.
+                                      ---
+                                      |
+                                      |
+ _  _ _ _ _ _  ------->  Consumer------
+            buggy 
+            msg
+
+                It will retry lets say 3 times
+If the message is not processed till retry exhaused it will be put into failure queue/Dead letter Queue. and it move forward.
+
+
+Kafka is pull based approach.
+Pull Based:: Means conusmer is polling the data and ask the queue you have any new data.
+
+
+
+RabbitMQ::
+
+RabbitMq is Push based approach.
+
+                   binding
+                   of routing
+                     key                    Con
+                    ---->           Queue 1 --
+Producer--->Exchange
+                    ---->           Queue 2
+
+
+Exchanges::
+
+1. FANOUT Exchange::
+In this whenever there is a message it will push to all the queues where queues are related to a particular exchange. It means it broadcast the message to all the queues.
+
+2. Direct Exchange(Exact Matches)
+It macthes with the routing key and put the message to the queue whose routing key matches.
+Message key and routing key.
+
+
+3. TOPIC Exchange (Wild Card)
+It matches the wild cart (pattern ) of the message key and routing key and put the message to those queue's.
+
+
+In this when conusmer unable to consume the message then the message is requeue to the same queue at the end of the queue.
+
+If retry finishes then it will be push to the dead queue.

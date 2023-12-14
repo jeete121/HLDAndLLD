@@ -1,0 +1,102 @@
+CAP Theorem
+
+CAP System defines a desirable property of distributes system with replicated data.
+
+C--> Consistency
+A--> Availability
+P--> Partition Tolerance
+
+
+              Application
+
+
+
+         DB1                  DB2
+         a=4 --------->        a=4
+
+        application updates a to 4 then it will be available in both db
+
+Consistency--> Whenever there is change in  any values of db then it will be same in all the nodes  to make ths system constistence.
+
+
+Availability--> All nodes should response. Either success or failure.
+
+
+
+
+                 A
+
+
+           B-------X--------C
+
+Partition Tolerance--> If application able to communicate/query if there is breakage in synying the data, then it is called partition tolerance. It means system is up.
+
+
+
+
+CAP--> Why we cannot use all three together?
+
+
+
+Possible-->                   Not Possible
+CA--                            CAP
+CP--
+AP--
+
+
+                    A
+
+
+
+
+
+         B -------------------------C
+       a=5                      a=5 
+       available 
+       a=6   ---------X ---------C  a=5 (it means inconsistence)
+
+
+
+
+AP
+
+                       A
+
+   
+               B--------X-------C
+               a=5              a=5
+               a=6 ------X------a=5   
+
+
+
+CP
+
+                        A
+
+
+
+                   B-----X-----C
+                   a=5         a=5
+                   a=5----X----down  
+
+
+
+CA             
+                    A     down(system down)
+
+              
+                B---X----C
+
+
+
+
+In real world P(Partition Tolerance) is must.
+
+CA --->
+AP --->
+Only these two options are available
+
+
+
+
+

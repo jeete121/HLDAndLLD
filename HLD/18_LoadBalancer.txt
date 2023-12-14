@@ -1,0 +1,174 @@
+Load Balancer And Its Algorithms
+
+
+
+Client1---->     ------ Server 1 
+              LB ------ Server 2
+Client2---->            .....
+
+To distributes the traffic appropriatatively to all the servers. So that no one server will be over burdern.
+
+
+Load Balancer Types::
+
+1. Network Load Balancer Type(L4 Balancer)::
+
+It has TCP Port/UDP Port/IP Address source and destinations.
+It is much more faster.
+
+2. Application Load Balancer Type(L7 Balancer)::
+
+It can read the headers/sessions/cookies/data. It is much more advanced.
+
+
+Network Load Balancer Type(L4 Balancer)
+
+Static Algorithms
+1. Round Robin
+2. Weighed Round Robin
+3. IP Hash
+
+Dynamic Algorithms
+1. Least Connection
+2. Weighed Least Connection
+3. Least Response Time
+
+
+
+
+Static Algorithms
+
+1 Round Robin::       
+                |          3 1
+Client 1------> |       ------Server1
+Cleint 2------> LB-----|
+Client 3------> |      |  4 2
+Client 4------> |       -------Server2
+
+In this algorithms one request will goto first server, next will goto second server,and so on.
+
+Advantages::
+1. Very Easy to Implement.
+2. Equal load distribution of all the servers.
+
+Disadvantages::
+1. One Server with high Capacity and Another with Low, both will be treated as same.
+2. Chance that Low capacity Server will go down because of overload of requests.
+
+2. Weighed Round Robin Algorithms::
+
+                |        3 2 1
+Client 1------> |       -----Server1(Weight 3)
+Cleint 2------> LB-----|
+Client 3------> |      |     4
+Client 4------> |       ------Server2(Weight 1)
+
+Weight represents the capacity of server.
+
+
+Advantages::
+1. Low Capacity Sever, will get saved from receiving the large no of requests.
+2. Easy to implements as Weights are static, no dynamic computation.
+
+
+Disadvantages::
+1. If requests have different processing time, then its possible that low capacity server get high processing requests and get overburdened.
+
+
+
+3. IP HASH::
+
+          Hash(IP Address)
+(IP1)           |          
+Client 1------> |          4 1 
+(IP2)           |       ------Server1
+Cleint 2------> |      |
+(IP3)           LB-----|
+Client 3------> |      |
+(IP4)           |      |   3 2
+Client 4------> |       -------Server2
+
+It calculates the hash of an IP address of the  client and assign the server on the basis of it.
+
+
+
+Advantages::
+1. Good for use cases, where same client need to connect to the same server.
+2. Easy to implement.
+
+Disadvantages::
+1. If Clients request is coming through PROXY, then all the clients will have same source IP address, and this will OVERLOAD one server.
+2. Can not ensure equal distribution.
+
+
+
+Dynamic Algorithms::
+
+1. Least Connection:
+
+         Check which Server
+         Has Less Active
+              Connection
+                |          Client 3
+                |          Client 1
+                |       Active Connection
+Client 1------> |       --------------Server1
+Cleint 2------> LB-----| 
+Client 3------> |      |
+                |      | Client 2  
+                |      |Active Connection
+Client 4------> |       ---------------Server2
+
+It checks the which server has less active connection and send the incoming request to that server.
+
+
+Advantages::
+1. Dynamic, as it consider the load on each server, so chance of overburdened of the server is less when each server has equal capacity.
+
+Diadvantages::
+1. TCP connections can be ACTIVE but possible have no traffic. So purpose is failed.
+2. No Difference between low capacity and high capacity server. Chance that low capacity server will get over burdened.
+
+
+2. Weighed Least Connection::
+
+
+                        
+
+                |          Client 3
+                |          Client 1
+                |       Active Connection
+Client 1------> |     4|--------------Server1
+Cleint 2------> LB-----|            (Weight 10)
+Client 3------> |      |
+                |      | Client 2  
+                |      |Active Connection
+Client 4------> |       ---------------Server2
+                                     (Weight 1)
+
+
+Calculate the Ratio of No. of Active Connections to Its Weight.
+Server with minimum ration get the request.
+
+
+
+3. Least Response Time::
+                        Active Connection 2
+                        ---------------Server1
+                |      |               TTFB: 3
+                |      |
+                |      | Active Connection 4
+Client 1------> |     4|--------------Server2
+Cleint 2------> LB-----|              TTFB: 1
+Client 3------> |      |
+                |      | Client 2  
+                |      |Active Connection 0
+Client 4------> |       ---------------Server3
+                                     TTFB: 2
+
+Picks the server which has less(Active Connection * Least TTFB)
+if clash, follow round robin.
+
+TTFB(Time To First Byte):
+time interval between sending a request and receiving the response from the server.
+

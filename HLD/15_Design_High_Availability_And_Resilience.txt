@@ -1,0 +1,125 @@
+Design High Availability Architecture
+
+
+It can be asked in many other forms like:
+
+1. Design Data Resiliency Architecture
+2. Design Architeture to achieve 99.999% Availability.
+3. Design to avoid SINGLE POINT OF FAILURE.
+4. Active-Passive v/s Acitive-Active Architecture.
+
+
+
+Single Node::
+
+              Client 
+                 |
+                 |
+                LB
+                 |
+                 |
+ App X         App Y            App Z 
+                 |
+                 |
+                 |
+                 |
+
+                 DB (primary DB)
+
+The problem with this architecture is if DB goes down the system will go down.
+
+Read Request and Write Request Failed
+
+It has single point of failure.
+
+
+
+Multi Node::
+
+It has two types
+1. Active-Passive
+2. Active-Active
+
+
+
+Active-Passive Architecture::
+
+Every company has 2 data centres.
+DC1,DC2
+
+
+                Client
+                  |
+                  |
+              Load Balancer
+                  |
+                |    |
+              |        |
+   DC1                              DC2
+
+AppX AppY AppZ                   AppX AppY AppZ
+    |                                   |
+    |                                   |
+    DB ------------Sync Up------------->DB
+
+In the active-passive out of those data centeres, only one is primary/live DB/Read Write DB.
+
+And the other ones will be treated as replicas.
+And other are known as disaster recovery data centers.
+
+In active-passive architecture if the request goes from primary data center(i.e DC1) then it will be read/write to its own DB(primary).
+
+If the request goes from other data centers(i.e DC2) then the request still goes to the same DB as of DC1.
+
+
+Reason for not utilizing the resoures.
+
+Reason 1
+Oracle/MySQL/Postgress are not Multi-Master.
+
+
+In case of Disaster Recovery Data Center::
+
+When there is any write request it will goes to live DB(primary DB).
+When there is any read request it will goes to the replicas DB(read only DB).
+
+
+If primary DB goes down we can migrate the requests from Main Data Center to Disaster Data Center(Recovery Data Center) and make the DB as master(primary).
+
+Once the primary DB up we can make it as replica/read only DB.
+
+
+
+Disadvantages:
+1. When the request will go from DC2 (Disaster recovery Data center) it took more time then the one which goes from the DC1(main data center).
+2. If there is a case of primary DB down. then we are routing the write request to the DC2(Disaster Data Center).There is a delay so till the time being the write request will fail.
+
+
+
+
+Active-Active Architecture
+
+Casandra DB
+
+                  Client
+                   |
+                   |
+                   LB
+                   |
+                 |    |
+                |      |
+               |        |
+             DC1          DC2
+             |               |
+    AppX AppY AppZ         AppX AppY AppZ
+             |                |
+             |  sync up       |
+             | bidirectional  |
+            DB<-------------->DB
+           primary/live     primary/live
+
+
+In this when the request goes from DC1 or DC2
+It will utilize there own DB(because now both the DB's are primary DB).
+
+The main disadvantge here is while sync up the DB's.

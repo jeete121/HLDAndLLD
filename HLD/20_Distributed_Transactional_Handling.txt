@@ -1,0 +1,119 @@
+Transaction Handling in Distributed System
+Two Phase Commit(2PC), Three Phase Commit(3PC)
+
+What is Transaction:
+
+It referes to a set of operations which need to be performed on simply say group of tasks which need to be performed against the DB.
+
+It has 4 properties:
+1. Atomicity: All operations in a single transaction should be success or all should fail.
+2. Consistency: DB should be in consistenct state before and after the transaction.
+3. Isolation: More than one transaction that is running concurrently,appears to be serialized.
+4. Durability: After transaction successfully completed, even if DB fails, data should not get lost.
+
+Example::
+
+Begin_Transaction:
+
+ - Withdraw Money from 'A': Rs 100
+ - Deposit Money to 'B': Rs 100
+
+If all success:
+         Do Commit
+else
+         Do Rollback
+
+Close_Transaction;
+
+How to handle this in Distributed System, where operations involves multiple databases?
+or 
+As Transaction is Local to a particular database? How we will satisfy the transaction Property in Distributed system?
+
+
+Begin_Transaction:
+
+ - Update Order DB
+ - Update Inventory DB
+                                Will this Work?
+If all success:
+         Do Commit
+else
+         Do Rollback
+
+Close_Transaction;
+
+
+
+
+How to handle Transaction in Distributed System?
+1. 2-Phase Commit
+2. 3-Phase Commit
+3. SAGA Pattern
+
+
+
+
+1. 2-Phase Commit::
+
+As name says, there are 2 phases in this protocol:
+a. Voting or Prepare Phase
+b. Decision or Commit Phase
+
+
+ 
+Application   Transaction     Participant1               Participant2
+              Coordinator  (Order Microservice (Inventory Microservice)
+|Perform This |                  |                      |
+| Operation   |                  |                      |
+|------------>|---               |                      |
+|             |   |Start         |                      |
+|             |<-- Transaction   |                      |
+|             |                  |                      |
+|             |----------------->|                      |
+|             |------------------|--------------------->|
+|             |                  |                      |
+|       Phase1|                  |                      |
+|       Begins|                  |                      |
+|             |                  |   PREPARE            |
+|             |------------------|--------------------->|
+|             |----------------->|                      |
+|             |  PREPARE         |                      |
+|             |<-----------------|                      |
+|             |        OK        |          OK          | 
+|             |<-----------------|----------------------|
+|             |                  |                      |
+|             |                  |                      |
+|             |                  |                      |
+|             |                  |                      |
+|             |----------------->|                      |
+|             |------------------|--------------------->|
+|             |                  |                      |
+|             |                  |                      |
+|       Phase2|                  |                      |
+|       Begins|                  |                      |
+|             |                  |   COMMIT             |
+|             |------------------|--------------------->|
+|             |----------------->|                      |
+|             |  COMMIT          |                      |
+|             |<-----------------|                      |
+|             |       DONE       |         DONE         | 
+|             |<-----------------|----------------------|
+|             |                  |                      |
+|             |---               |                      |
+|             |   | Close        |                      |
+|             |<-- Transaction   |                      |
+|             |                  |                      |
+|<------------|                  |                      |
+|             |                  |                      |
+
+If in any db update failed then in second step it will send ABORT in place of COMMIT.
+
+Ques:
+1. Transaction Coordinator fails.
+2. Participant get fails.
+
+With these prepare message will lost.
+OK message got failed.
+Commit or abort message is lost.
+
+Each maintain its own lock files to maintain the status

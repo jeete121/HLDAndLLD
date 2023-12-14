@@ -1,0 +1,179 @@
+Design Rate Limiter
+
+To prevent DDoS Attack rate limiter will  come into picture.
+
+Algorithms:
+1. Token Bucket
+2. Leaking Bucket
+3. Fixed Window Counter
+4. Sliding Window Log
+5. Sliding Window Counter
+
+
+
+1. Token Bucket
+Capacity:: To hold token (number of tokens)
+
+If we try to add more tokens then it will overflow.
+   
+                     Refiller 1  min (2 tokens)
+                     |
+                     |
+                     |
+   OverFlow    
+    ______        Bucket
+   |
+   |
+   OverFlow
+
+If bucket is full and refiller try to add more tokens then it will overflow.
+
+                      
+                  |Capacity=3
+                  |         2
+                               YES
+Request  ---->  Condition       ---> Consumer
+                 Token present?      one token
+                    |
+                    |
+                    REQ Denied
+
+
+
+Rule:: 
+We can configure this token bucket by per user for per API per minutes.
+
+Wheneever request is declined HTTP status code is 429 (Excess Requests in time limit).
+
+
+2. Leaking Bucket
+
+                
+________
+        |
+        |
+        Bucket     (Fixed Capacity)
+        |
+        | At constant rate
+          requests are processed
+
+If incomming request is more than the processed requests then those requests are denied.
+
+
+It is implemented through Queue.
+
+
+
+
+                     NO   
+REQ  ---> IS QUEUE ---->  Processed in a
+                           constant rate
+            FULL
+              |
+              |YES
+                
+               Request Denies (HTTP 429)
+
+
+Disadvantage of this algorithm the constant bust can come. 
+
+Example :: Amazon prime
+             in day time requests come less as compared to night or evening.
+
+
+
+
+3. Fixed Window Counter
+
+It has fixed windows of some time (eg. 5 minutes) and counter (e.g 3)
+
+If requests are comming and the conuter is greater then zero the requests will be processed within that time.
+Once the counter becomes zero and the requests are comming in the same time frame requests will be denied.
+
+
+Disadvantage::
+              
+
+
+                 REQ1    REQ1
+                 REQ2    REQ2   
+                 REQ3    REQ3
+
+ _____8:05  __________ 8:10  _______ 8:15
+           counter =3
+
+Within 5 minutes request should be 3
+But in the 5 minutes requests are 6.
+
+
+4. Sliding Window Log 
+
+When requests are comming in the window size and number of requests are not crossed the limit of the window size then the request will be processed.
+If the request is comming and limit is crossed then we are logging the request.
+
+Disadvantage::
+Even the request is denied the request we are logging its timeframe. It will take lot of space.
+
+
+
+5. Sliding Window Counter
+
+It adds two functionality
+a.Fixed window counter.
+b. Sliding Window Log.
+
+_____ _____ _____ ______ ____ ___________
+    8:01   8:02         8:03
+      counter  
+        10.
+
+
+Ultimate goal of sliding window is find the number of request present in this window.
+
+
+
+
+
+Components
+1. Counter  
+To maintain a counter we will use REDIS
+2. 
+
+
+
+
+
+
+Client --------------------> Server
+                             Rate Limiter
+
+              
+             (API GateWay)
+Client-------Rate Limiter-------Server
+
+
+
+
+                                     Config 
+                                       files
+                  ------->Cache-------|               
+                  |
+                  |
+                  |
+Client-------> Rate Limiter --------> Server
+      <-------    |
+         429      |
+         or       |
+         Success   -------> Redis
+
+
+
+If There are more than one rate limiter
+
+we will use REDIS
+
+
+                ----------> RL1
+Client -------->----------> RL2   REDIS
+                ----------> RL3    It is   
+                                 Centralized                       

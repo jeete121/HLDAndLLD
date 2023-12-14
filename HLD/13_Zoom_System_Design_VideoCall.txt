@@ -1,0 +1,26 @@
+High Level of Video Calling App
+
+1. Real Time System:: When there is real time communication happens then they are called as real time system.
+
+
+             HTTP 1.1
+Frontend ------------> Backend
+
+HTTP is one way connection. It is not bidirectional.
+
+HTTP2 Birectional connection.
+
+
+
+                HTTP 1.1
+Frontend--------------------> Backend
+        <--------------------
+        
+
+
+    A1<--------->S<--------->A2
+      there is websocket
+       connection between each of them
+        
+
+generates a JWT token and if we decode that jwt token we will get the id of the user to identified the user who is the user.
