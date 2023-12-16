@@ -1,0 +1,119 @@
+Database Indexing:
+
+1. How Table data is actually stored?
+       
+        Col1    Col2  Col3             
+        EmpID   Name Address            
+Row1      1      A    City A        This is just logical representation.
+Row2      2      B    City B      Actual Data is not stored in this way.
+Row3      3      C    City C
+Ro44      4      D    City D
+
+
+- DBMS creates Data Pages(generally its 8KB but depends on DB to DB).
+- Each Data Page can store multiple table rows in it.
+
+
+                Example of Data Page
+                  _______________ 
+                 |               |-->Page No
+  |          96  |    Header     |-->Free Space
+  |         bytes|               |-->Checksum etc..
+  |              |_______________|        
+  8KB      8060  |  Data Records |
+  |        bytes |               |--->Actual Data Stored here.
+  |              |_______________|
+  |              |    Offset     |--->Contains an array, each index of 
+  |          36  |               |    an array holds a pointer to 
+            bytes|_______________|    corresponding data in the Data
+                                              recods.
+
+
+So if 1 table row is lets say 64Bytes, so in 1 data page we can have 125 DB rows.
+
+DBMS creates and manage these data pages. As for storing 1 table data, it can create many data pages.
+
+These data pages ultimately gets stored in the  Data Block in physical memory like disk.
+
+
+What is Data Block?
+1. Data Block is the minimum amount of data which can be read/write by an I/O operation.
+2. It is managed by underlying storage system like disk. Data Block size can range from 4kb to 32kb(common size 8KB).
+3. It is not managed by DBMS.
+4. So based on the data block size, it can hold 1 or many Data page.
+
+
+DBMS maintains the mapping of DataPage and Data block.
+
+           Data Page 1   Data Block 1
+           Data Page 2   Data Block 1
+           Data Page 3   Data Block 2
+           Data Page 4   Data Block 2
+
+One data block can holds multiple data pages.
+
+DBMS controls Data Pages(like what Row goes in which page or sequence of pages etc.) but has no control on Data Blocks(data blocks can be scattered over the disk).
+
+
+2. What type of indexing present in RDBMS?
+ a. Clustered Indexing
+ b. Non-Clustered Indexing
+
+
+What is Indexing?
+It is used to increased the performance of the database query. So that data can be fetched faster.
+Without indexing, DBMS has to iterate each and every table row to find the requested data
+i.e O(N), if there are millions of rows, query can take some time to fetch the data.
+
+
+Which Data Structure provides better time complexity then O(N)?
+
+B+ Tree, it provides O(logN) time complexity for insertion, searching and deletion.
+
+How B(Balanced) Tree works?
+
+1. It maintains sorted data.
+2. All leaf are at the same level.
+3. M order B tree means, each node can have at most M childrens.
+4. And M-1 keys per node.
+
+
+
+B+ tree is exactly same as B tree, with additional feature like child nodes are also linked to each other.
+
+
+
+DBMS used B+ Tree to manage its Data Pages and Rows within the pages.
+
+- Root node or Intermediary node hold the values which is used for fatser searching the data. Possible that value might have deleted from DB, but its can be used for sorting the tree.
+
+- Leaf node actually holds the indexed column value.
+
+
+
+Indexing Types::
+
+1. Clustered Indexing:: Order of Rows inside the data pages, match with the order of the Index.
+
+
+The order will be given the offset array.
+
+Note::
+1. There can be only 1 clustured index present/table because ordering of pages can be done based on one index only.
+2. If maually you have not specified any clustered index, then DBMS looks for PRIMARY KEY which is UNIQUE and NOT NULL and use it as a Clustered Key.
+3. If in table there is no PRIMARY KEY available, then internally it creates a hidden Column which is used as Clustered Index.(This columns just increase sequentially so gurantted unique and not null).
+
+
+2. Non-Clustered Indexing::
+ a. Whenever we are creating a secondary index/composite index this is knows an non-clustered indexing.
+ b. There can be any number of secondary/composite index.
+
+
+
+
+
+1. Find the Index Page.
+2. B+ Tree find Data Page.
+3. Data Page find the Data Block.
+4. Load Data Block in memory.
+5. Read the Data.

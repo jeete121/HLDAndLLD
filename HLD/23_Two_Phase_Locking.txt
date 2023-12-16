@@ -1,0 +1,98 @@
+2PL(Two Phase Locking)
+
+
+Basic Two Phase Locking:
+
+Phase1: Growing Phase
+1. Tnx request for the lock by lock manager.
+2. Lock manager either grant or denied the lock request(denied if other txn has placed the locked on it already).
+
+Phase2: Shrinking Phase
+1. Txn can not acquire any new lock.
+2. Txn is only allowed to release the lock which is taken previously.
+
+
+Baisc Two Phase Locking:
+
+In this there is a possibility of deadlock.
+
+1. DeadLock:
+
+Deadlock Prevention Strategies:
+1. Timeout:
+
+In this strategy, scheduler find out that TXN is waiting too long for the lock, it simply assumes that there might be a deadlock involving this transaction and thus abort it.
+
+Schedule can make mistake(what if TXN1 wait for the lock, which is acquired by other TXN2 which is taking just long time to finish).
+
+2. Direct graph called Wait-for-Graph(WFG):
+
+There will be an edge from node Ti to Tj.
+
+
+Ti------------------------->Tj
+  if Txn Ti is waiting for 
+  Txn Tj to release some lock
+
+
+Scheduler delete the edge, whenever lock is release by particular txn which causing some other txn to wait.
+
+   T1----------->T2--------->T3
+   |                         |
+   |     Deadlock            |
+   |                         |
+   |                         |
+   T5<-----------------------T4
+
+Scheduler looks for cycle in the WFG and try to identify the deadlock.
+
+
+When deadlock is identified, TXN is choosen from the cycle in WFG that need to be aborted(these txns are called victim)..
+
+Scheduler check below things to identify the victim:
+1. The amount of effort txn put till now.
+2. The amount of effort required to finish the txn.
+3. The cost of Aborting the txn(cost generally means here is how many updates already has been done).
+4. The number of cycles that contains the transaction.
+
+
+
+3. Conservative 2PL(also known as Static 2PL):
+
+1. Avoid deadlock by requiring each txn to acquire all the locks at start of the txn itself.
+2. Each txn, predeclared its read and write operation to the scheduler.
+3. Scheduler tries to set all the lock needed by txn.
+4. If Scheduler fails to acquire any lock, none of the lock is granted to Txn and it will wait.
+
+Cons of Conservative 2PL:
+ - Less concurrency
+ - Extra overhead of Scheduler to know all the Read and Write operation of txn before starting the operation.
+
+
+4. TimeStamp based Deadlock detection:
+ 
+Old TimeStamp of Txn= High Priority of the Txn
+
+Wait-Die:
+- Old txn waits for the New txn
+- ts(T1)<ts(T2), then T1 will wait for T2 to get completed, otherwise txn will get aborted.
+
+Wound-Wait:
+
+- Old txn give wound of the new txn and make them aborted ts(T1)<ts(T2), then T2 abort and relases its lock otherwise txn will wait.
+
+
+2. Cascading aborts
+
+
+
+Cascading Aborts Prevention Strategy:
+
+1. Strong Strict 2PL(also known as Rogorous 2PL):
+ - Txn is not allowed to acquire or upgrade more lock after growing phase.
+ - Release all the locks at the end of the txn only.
+
+
+Cons of Strict 2PL:
+
+- Less Concurrency

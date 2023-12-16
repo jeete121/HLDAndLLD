@@ -112,8 +112,85 @@ Ques:
 1. Transaction Coordinator fails.
 2. Participant get fails.
 
-With these prepare message will lost.
-OK message got failed.
+With these prepare message will lost.--> Abort the transaction(Participant abort the transaction).
+
+OK message got failed.---> Transaction coordinator waits for some time once timeout happens it will abort the transaction.
+
 Commit or abort message is lost.
 
 Each maintain its own lock files to maintain the status
+
+
+
+3-Phase Commit (Non Blocking Protocol)
+
+As name says, there are 2 phases in this protocol:
+
+1. Prepare Phase (same as 2PC)
+2. Pre-Commit Phase
+3. Commit Phase
+
+
+ 
+Application   Transaction     Participant1               Participant2
+              Coordinator  (Order Microservice (Inventory Microservice)
+|Perform This |                  |                      |
+| Operation   |                  |                      |
+|------------>|---               |                      |
+|             |   |Start         |                      |
+|             |<-- Transaction   |                      |
+|             |                  |                      |
+|             |----------------->|                      |
+|             |------------------|--------------------->|
+|             |                  |                      |
+|       Phase1|                  |                      |
+|       Begins|                  |                      |
+|             |                  |   PREPARE            |
+|             |------------------|--------------------->|
+|             |----------------->|                      |
+|             |  PREPARE         |                      |
+|             |<-----------------|                      |
+|             |        OK        |          OK          | 
+|             |<-----------------|----------------------|
+|             |                  |                      |
+|             |                  |                      |
+|             |                  |                      |
+|             |                  |                      |
+|             |----------------->|                      |
+|             |------------------|--------------------->|
+|             |                  |                      |
+|             |                  |                      |
+|       Phase2|(Pre-Commit Phase)|                      |
+|       Begins|                  |                      |
+|             |                  | Pre Commit:COMMIT    |
+|             |------------------|--------------------->|
+|             |----------------->|                      |
+| Decision    |Pre Commit: COMMIT|                      |
+|  Lock File  |<-----------------|                      |
+| PreCom:Commi|       ACK        |        ACK           | 
+|             |<-----------------|----------------------|
+|             |                  |                      |
+|             |                  |                      |
+|       Phase3|                  |                      |
+|       Begins|                  |                      |
+|             |                  |   COMMIT             |
+|             |------------------|--------------------->|
+|             |----------------->|                      |
+|             |  COMMIT          |                      |
+|             |<-----------------|                      |
+|             |       DONE       |         DONE         | 
+|             |<-----------------|----------------------|
+|             |                  |                      |
+|             |---               |                      |
+|             |   | Close        |                      |
+|             |<-- Transaction   |                      |
+|             |                  |                      |
+|<------------|                  |                      |
+|             |                  |                      |
+
+
+2-Phase Commit and 3-Phase Commit are synchronous in nature.
+
+SAGA Pattern::
+It is asynchronous.
+It is used when there is long trailing transactions.

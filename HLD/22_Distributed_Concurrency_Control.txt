@@ -1,0 +1,351 @@
+System Design:: Distributed Concurrency Control
+
+Scenario:: Many concurrent request tries to book same Movie theatre seat.
+
+
+                               ID     STATUS
+                               _____________
+User1   User2 User3           |    |        |
+      |   |   |               | 10 |FREE    |
+         |||                  |____|________|
+        seat
+
+     {
+
+       Read Seat Row with ID:10
+Critical  If Free:
+Section   Logic to Change the Status from free to Booked
+            Update the DB
+     }
+
+Critical Section:: A piece of code/logic where you are trying to access shared resource.
+
+
+
+
+1. Using SYNCHRONIZED for the Critical Section:
+
+  synchronized()
+  {
+    Read Seat Row with ID: 10
+    If Free:                                             
+     Logic to Change the Status from free to Booked
+     Update the DB   
+
+  }
+
+                               ID     STATUS
+                               _____________
+User1   User2 User3           |    |        |
+      |   |   |               | 10 |FREE    |
+         |||                  |____|________|
+        seat
+
+
+  Will this solution works for Distributed System?
+
+
+Synchronized cannot help in case of distributed system
+
+
+          User1--|------>S1(Machine 1)
+          User2--LB----->S2(Machine 2)
+          User3--|------>S3(Machine 3)
+
+
+2. Using Distributed Concurrency Control
+
+a. Optimistic Concurrency Control(OCC)
+b. Pessimistic Concurrency Control(PCC)
+
+
+
+1. What is the usage of Transaction?
+
+Transaction helps to achive INTEGRITY. Means it help us to avoid INCONSISTENCY in our database.
+
+For Example::
+Debit the Money from A and Credit the money to B
+
+BEGIN_TRANSACTION:
+     - Debit the Money from A
+     - Credit the Money to B
+     If all success:
+          COMMIT; 
+       else:
+           ROLLBACK;
+
+END_TRANSACTION;
+
+2. What is DB Locking?
+
+Db Locking, help us to make sure that no other transaction update the locked rows.
+
+
+ ____________________________________________
+|Lock Type  |Another Shared|Another Exclusive|
+|           |  Lock        | Lock            |
+|___________|______________|_________________|
+|Have Shared|              |                 |
+| Lock      |  YES         |    NO           |
+|___________|______________|_________________|
+| Have      |              |                 |
+|Exclusive  |  NO          |    NO           |
+| Lock      |              |                 |
+|___________|______________|_________________|
+
+Share Lock is Denoted by (S). It is generally a read lock. In shared lock only read can happen.
+Exclusive Lock is Denoted by (X). It is genarally a write lock. Exclusive lock means any other transaction cannot even read it or write it.
+
+
+
+3. What are the Isolation Level present?
+
+
+ __________________________________________________________
+| Isolation   |Dirty Read    |Non-Repeatable |Phantom Read|
+|  Level      |Possible      |    Read       |  Possible  |
+|_____________|______________|_______________|____________|Concurrency
+| Read        |              |               |            | High
+| Uncommitted |   YES        |    YES        |   YES      |  |
+|_____________|______________|_______________|____________|  |
+| Read        |              |               |            |  |
+| Committed   |   NO         |    YES        |   YES      |  |
+|_____________|______________|_______________|____________|  |                 
+| Repeatable  |              |               |            |  |
+| Read        |   NO         |    NO         |   YES      |  |
+|_____________|______________|_______________|____________|  |
+|             |              |               |            |  |
+|Serializable |   NO         |    NO         |    NO      |Concurrency
+|_____________|______________|_______________|____________|  Low
+                                                            
+
+
+
+Dirty Read:
+If Transaction A is reading the data which is written by Transaction B and not yet committed.
+If Transaction B does the rollback, then whatever data read by Transaction A is known as dirty read.
+
+
+
+
+      Transaction A | Transaction B    |   DB
+  __________________|________________  |_______________________
+T1:BEGIN_TRANSACTION|BEGIN_TRANSACTION |ID:1 ,Status: Free
+  __________________|__________________|_______________________
+   Update Row ID:1, |                  |ID:1,Status: Booked
+T2: Status: Booked  |                  |(Not Commited by TA yet)
+ ___________________|__________________|_______________________
+                    |Read Row ID:1     |ID:1,Status: Booked
+T3:                 |(Got Status as    |(Not Commited by Transaction A
+                    |  booked)         |   yet)
+____________________|__________________|_______________________
+   Some Issue faced | Some computation |ID:1,Status: Booked
+T4:  here           |                  |(Not Commited by Transaction A
+                    |                  |        yet)
+____________________|__________________|________________________
+                    |                  |
+T5: Rollback        | Commit           | ID:1
+                    |                  | Status: Free
+                    |                  |
+
+
+
+Non-Repeatable Read::
+
+If suppose Transaction A, reads the same row several times and there is a chance that it reads different value.
+
+    Transaction A      | DB
+_______________________|______________________
+T1: BEGIN_TRANSACTION  | ID: 1
+                       | Status: Free
+_______________________|______________________
+T2: Read Row ID:1      | ID: 1
+   (reads status: Free)| Status: Free
+  _____________________|______________________
+T3:                    |ID: 1
+                       |Status: Booked<-(Some othertransaction changed
+                       |                 and committed the changes)
+                       |
+_______________________|____________________________________________
+                       |
+T4: Read Row ID:1      | ID: 1
+   (reads status:      | Status: Booked
+           Booked)     |
+_______________________|____________________________________________
+                       |
+T5: COMMIT             |
+                       |
+
+
+
+
+
+Phantom Read::
+
+If suppose Transaction A, executed same query several times and there is a chance that the rows returned are different.
+
+
+                         |
+T1: BEGIN_TRANSACTION    | ID:1 Status: Free,
+                         | ID:3,Status: Booked
+_________________________|_______________________________________
+   Read Row where ID>0   |
+T2:and ID<5              |ID:1,Status: Free
+   (reads 2 rows ID:1 and|ID:3,Status: Booked
+     ID:3)               |
+_________________________|________________________________________
+                         |ID: 1, Status:Free <-(Some other Transaction
+T3:                      |ID: 2, Status:Free    Inserted the row with 
+                         |ID: 3, Status:Booked  ID:2 and Committed)
+_________________________|________________________________________
+   Read Row where ID>0   |ID: 1, Status:Free
+T4:and ID<5(read 3 rows  |ID: 2, Status:Free
+   ID:1,ID:2 and ID:3)   |ID: 3, Status:Booked
+                         |
+_________________________|_________________________________________
+                         | 
+T5: COMMIT               |
+                         |
+
+
+ ___________________________________________________________
+|                   |                                       |
+|   ISOLATION LEVEL |      Locking Strategy                 |
+|___________________|_______________________________________|
+|Read Uncommitted   |    Read: No Lock Required             |
+|                   |    Write: No Lock Required            |
+|___________________|_______________________________________|
+|Read Committed     |Read: Shared Lock is acquired and      |
+|                   |released as soon as read is done       |
+|                   |Write: Exclusive Lock acquired and keep|
+|                   |till the end of the Transaction        |
+|___________________|_______________________________________|
+|Repeatable Read    |Read: Shared Lock acquired and released|
+|                   |only at the end of of the Transaction  |
+|                   |Write: Exclusive Lock acquired and     |
+|                   |released at the end of the Transaction |
+|___________________|_______________________________________|
+|                   |Same as Repeatable Read Locking        |
+|Serializable       |Strategy+apply Range Lock and lock is  |
+|                   |release only at the end of transaction |
+|___________________|_______________________________________|
+
+
+
+
+SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+BEGIN_TRANSACTION;
+
+SELECT Query;
+UPDATE Query;
+If Success:
+    COMMIT TRANSACTION;
+else:
+    ROLLBACK TRANSACTION;
+
+END_TRANSACTION;
+
+
+
+Optimistic Concurrenct Control(OCC):
+
+It uses read committed isolation level.
+
+1. Isolation Level used Below REPEATABLE READ.
+2. Much Higher Concurrency.
+3. No Chance of Deadlock.
+4. In case of conflict, overhead of transaction rollback and retry logic is there.
+
+      Transaction A | Transaction B    |   DB
+  __________________|________________  |_______________________
+T1:BEGIN_TRANSACTION|BEGIN_TRANSACTION |ID:1 ,Status: Free,Version: 1
+  __________________|__________________|_______________________
+   Read Row ID:1    | Read Row ID:1    |ID:1,Status: Booked
+T2(Row Version is 1)|(Row Version is 1)|Version:1
+ ___________________|__________________|_______________________
+   Select for Update|Read Row ID:1     |ID:1,Status: Booked
+T3:(Version Validat-|(Got Status as    |Version:1--(Exclusive lock by 
+  ion happens)      |  booked)         |Transaction A) 
+____________________|__________________|_______________________
+  Update Row ID:1,  |                  |ID:1,Status: Booked
+T4:Status: Booked,  |                  |Version:2 --(Exclusive Lock by
+   Version:2        |                  |Transaction A)
+____________________|__________________|________________________
+                    |                  |
+T5: COMMIT          |                  | ID:1
+                    |                  | Status: Bookes
+                    |                  | Version:2
+____________________|__________________|________________________
+                    |                  |
+T6:                 |Select for update |ID:1
+                    |(Version Validati-|Status: Booked(Exclusive Lock
+                    | on happens       |by transaction B)
+                    |                  |Version:2
+____________________|__________________|__________________________
+                    |                  |ID:1
+T7                  |  ROLLBACK        |Status: Booked
+                    |                  |Version:2
+____________________|__________________|___________________________ 
+
+It controls through the versioning.
+              ___________________
+             |  Creates          |
+             |  Transaction      |____________
+             |___________________|            |
+                     |                        |
+                     |                        |
+             ________|___________             |
+            | Read Row           |            |
+            |  (Unlocked too)    |            |
+            |____________________|            |
+                     |                        |
+            _________|____________            |
+           |Computation on        |           |        
+           |fetched Row           |           |           
+           |______________________|           |
+                     |                        |
+            _________|____________        ____|_____    
+           |Row Modified?         | YES  |          |    
+           |                      |______| Rollback |       
+           |______________________|      |__________|
+                      |
+                      |NO
+             _________|____________ 
+            |                      |
+            |   Update DB          |
+            |______________________|
+                      |     
+             _________|____________ 
+            |                      |
+            |   Commit             |
+            |______________________| 
+
+
+
+
+Pessimistic Concurrency Control(PCC)::
+
+It uses repeatable or serializable isolation level.
+
+1. Isolation level used REPEATABLE and SERIALIZABLE.
+2. Less Concurrency Compared to optimistic.
+3. Deadlock is possible,then transaction stuck in deadlock forced to do deadlock.
+4. Putting a long lock, sometimes timeout issue comes and need to done.
+
+   T1                        T2
+ Begin_Txn                            
+ Read (A)                    Read A
+ Update(B)
+     |
+     |
+     |
+     .
+     .
+Commit/Rollback
+
+
+
+
+              
