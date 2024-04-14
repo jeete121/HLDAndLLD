@@ -1,0 +1,27 @@
+services:
+  mongo-jpa:
+    image: "jeete/mongo-jpa:latest"
+    container_name: mongo_ms
+    ports:
+      - "8080:8080"
+    environment:
+     SPRING_APPLICATION_NAME: "mongo-jpa"
+     SPRING_DATA_MONGODB_URI: "mongodb://jeeetemongo:27017/local"
+    networks:
+     - jeete
+     
+     
+  jeeetemongo:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ""
+      MONGO_INITDB_ROOT_PASSWORD: ""
+    ports:
+      - "27017:27017"
+    networks:
+     - jeete
+
+networks:
+  jeete:
+    driver: "bridge"
