@@ -1,3 +1,5 @@
+LLD of Handling NULL (Null Object Design Pattern)
+
 Problem::
 
 
