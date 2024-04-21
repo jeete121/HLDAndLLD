@@ -456,3 +456,28 @@ System.out.println(carObj.getToSpeed());
 }
 
 }
+
+
+
+
+
+
+Builder Pattern
+
+When you want to create object step by step.
+
+
+                  Director
+                     |
+                     |
+                     |
+      createWalls(); Abstract         ------------>  Home 
+          ....       HomeBuilder
+            _____________________
+           |                     |
+           |                     |
+         Flat                   Duplex
+        HomeBuilder             HomeBuilder
+
+
+
