@@ -20,6 +20,7 @@ S--> Single Responsibility Principle
 A class should have only one reason to change.
 
 Example::
+$$
 
 class Marker {
     String name;
@@ -36,6 +37,7 @@ class Marker {
   }
 }
 
+$$
 
 class Invoice {
         private Marker marker;
