@@ -20,8 +20,7 @@ S--> Single Responsibility Principle
 A class should have only one reason to change.
 
 Example::
-$$
-
+**
 class Marker {
     String name;
     String color;
@@ -36,8 +35,7 @@ class Marker {
      this.price=price;
   }
 }
-
-$$
+**
 
 class Invoice {
         private Marker marker;
