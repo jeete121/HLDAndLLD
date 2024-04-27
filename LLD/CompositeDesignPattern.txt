@@ -1,0 +1,271 @@
+Composite Design Pattern:
+
+Design File System/Design Calculator
+
+
+Object inside object. 
+Whenever a problem can be divide into tree like structure then we will use
+Composite Design Pattern.
+
+
+                       Component
+                      _______________  
+                       operation()   __*_____
+                      _______________        |
+                          |                  |
+                   _______|____________      |
+                  |                    |_____|
+                  |                    |
+                 Leaf                Composite  
+                 operation()          operation()
+                                      add()
+
+
+
+
+
+
+
+Problem Statement::
+
+public class File {
+
+String filename;
+public File(String name) {
+ this.filename = name;
+}
+
+public void ls() {
+  System.out.println("file name "+ filename);
+}
+
+}
+
+
+public class Directory {
+
+String directoryName;
+List<Object> objectList;
+
+public Directory(String name) {
+
+  this.directoryName = name;
+  objectList = new ArrayList<>();
+}
+
+public void add(Object object) {
+
+objectList.add(object);
+}
+
+ public void ls() {
+  
+ System.out.println("Directory Name: " + directoryName);
+ for(Object obj:objectList) {
+  
+ if(obj instanceof File) {
+      ((File) obj).ls();
+  }
+ else if(obj instanceof Directory) {
+   ((Directory) obj).ls();
+ }
+ }
+
+}
+
+}
+
+
+public class Main {
+
+    public static void main(String args[]){
+
+        Directory movieDirectory = new Directory("Movie");
+
+        File border = new File("Border");
+        movieDirectory.add(border);
+
+        Directory comedyMovieDirectory = new Directory("ComedyMovie");
+        File hulchul = new File("Hulchul");
+        comedyMovieDirectory.add(hulchul);
+        movieDirectory.add(comedyMovieDirectory);
+
+        movieDirectory.ls();
+
+    }
+}
+
+
+
+                        interface      *
+                      FileSystem _________________
+                        ls();                     |
+               __________|___________             |
+              |                      |            |
+             File                   Directory------
+              ls()                  ls();
+                                    add();
+
+
+
+public interface FileSystem {
+ 
+ public void ls();
+
+}
+
+
+public class File implements FileSystem {
+ 
+ String fileName;
+  public File(String name) {
+   this.fileName = name;
+ }
+
+public void ls() {
+   System.out.println("file name " + fileName);
+}
+
+}
+
+
+public class Directory implements FileSystem {
+
+  String directoryName;
+  List<FileSystem> fileSystemList;
+  
+  public Directory(String name) {
+  this.directoryName = name;
+  fileSystemList = new ArrayList<>();
+ }
+  
+public void add(FileSystem filesystemObj) {
+  fileSystemList.add(filesystemObj);
+}
+
+public void ls() {
+
+   System.out.println("Directory name " + directoryName);
+   for(FileSystem fileSystemObj : fileSystemList) {
+      fileSystemObj.ls();  
+     }
+
+}
+ 
+}
+
+
+public class Main {
+    public static void main(String args[]){
+
+       Directory movieDirectory = new Directory("Movie");
+
+        FileSystem border = new File("Border");
+        movieDirectory.add(border);
+
+       Directory comedyMovieDirectory = new Directory("ComedyMovie");
+       File hulchul = new File("Hulchul");
+        comedyMovieDirectory.add(hulchul);
+        movieDirectory.add(comedyMovieDirectory);
+
+        movieDirectory.ls();
+
+    }
+}
+
+
+
+
+
+
+public interface ArithmeticExpression {
+
+    public int evaluate();
+}
+
+
+public class Number implements ArithmeticExpression {
+
+ int value;
+ public Number(int value) {
+   this.value = value;
+ }
+ 
+  public int evaluate() {
+   System.out.println("Number value is :" + value);
+    return value; 
+ }
+} 
+
+
+
+public class Expression implements ArithmeticExpression {
+
+ArithmeticExpression leftExpression;
+ArithmeticExpression rightExpression;
+Operation operation;
+
+public Expression(ArithmeticExpression leftPart,ArithmeticExpression rightPart,
+                  Operation operation) {
+  this.leftExpression = leftPart;
+  this.rightExpression = rightPart;
+  this.operation = operation;
+  
+}
+
+public int evaluate() {
+ 
+ int value = 0;
+ switch(operation) {
+ 
+    case ADD:
+         value = leftExpression.evaluate() + rightExpression.evaluate();
+         break;
+    case SUBTRACT:
+         value = leftExpression.evaluate() - rightExpression.evaluate();
+         break;
+    case DIVIDE:
+          value = leftExpression.evaluate() / rightExpression.evaluate();
+          break;
+    case MULTIPLY:
+         value = leftExpression.evaluate() * rightExpression.evaluate();
+         break;
+
+ }
+
+System.out.println("Expression value is :" + value);
+return value;
+
+}
+
+ 
+}
+
+
+public enum Operation {
+
+ADD,
+SUBTRACT,
+MULTIPLY,
+DIVIDE;
+
+}
+
+
+
+public class Main {
+
+public static void main(String[] args) {
+  ArithmeticExpression two = new Number(2);
+  ArithmeticExpression one = new Number(1);
+  ArithmeticExpression seven = new Number(7);
+
+  ArithmeticExpression addExpression = new Expression(one,seven,Operation.ADD);
+   
+  ArithmeticExpression parentExpression = new Expression(two,addExpression,Operation.MULTIPLY);
+  
+System.out.println(parentExpression.evaluate());
+}
+
+}
+
