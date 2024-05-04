@@ -22,7 +22,7 @@ public class EmployeeClient {
 public void getEmployeeDetails() {
 
    EmployeeFacade employeeFacade = new EmployeeFacade();
-   Employee employeeDetails = employeeFacade.etEmployeeDetails(121222);
+   Employee employeeDetails = employeeFacade.getEmployeeDetails(121222);
 
  }
 }
@@ -67,6 +67,12 @@ public Employee getEmployeeDetails(int empID) {
 
 }
 
+public class Employee {
+
+int empID;
+String empName;
+
+}
 
 
 Scenario 2::
@@ -131,7 +137,7 @@ public void createOrder() {
 
 public class OrderClient {
 
- public static main(String args[]) {
+ public static void main(String args[]) {
    OrderFacade orderFacade = new OrderFacade();
    orderFacade.createOrder();
  }
