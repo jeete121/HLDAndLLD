@@ -34,4 +34,84 @@ To avoid Class explosion
 |   }      |    |     }     |    |return pizza.cost | 
 |__________|    |___________|    |  +10             |
                                  |__________________|
+
+
+
+
+public abstract class BasePizza {
+
+ public abstract int cost();
+}
+
+
+public class Farmhouse extends BasePizza {
+
+@Override
+public int cost() {
+
+ return 200;
+}
+
+}
+
+
+public class VegDelight extends BasePizza {
+
+@Override
+public int cost() {
+
+  return 120;
+}
+
+}
+
+
+public class Margherita extends BasePizza {
+
+ @Override
+public int cost() {
+  return 100;
+}
+}
+
+
+
+public abstract class ToppingDecorator extends BasePizza {
+
+}
+
+
+public class ExtraCheese extends ToppingDecorator {
+
+BasePizza basePizza;
+
+public ExtraCheese(BasePizza pizza) {
+  this.basePizza = pizza;
+}
+
+@Override
+public int cost() {
+
+ return basePizza.cost() + 10;
+
+}
+}
+
+
+public class Mushroom extends ToppingDecorator {
+
+BasePizza basePizza;
+
+public Mushroom(BasePizza pizza) {
+  this.basePizza = pizza;
+}
+
+@Override
+public int cost() {
+
+ return basePizza.cost() + 15;
+
+}
+}
+     
                                   

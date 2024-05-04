@@ -1,0 +1,148 @@
+Facade Design Pattern (Structural Design Pattern)
+
+1. Simple
+2. Widely Used
+
+When we have to hide the system complexity from the client.
+
+
+
+Client --------> Facade ---------> System
+      ---------------------------->
+
+Facade is not mandatory. Client can directly talks to System.
+
+
+
+Scenario 1:
+
+
+public class EmployeeClient {
+
+public void getEmployeeDetails() {
+
+   EmployeeFacade employeeFacade = new EmployeeFacade();
+   Employee employeeDetails = employeeFacade.etEmployeeDetails(121222);
+
+ }
+}
+
+
+public class EmployeeFacade {
+ 
+EmployeeDAO employeeDAO;
+
+  public EmployeeFacade() {
+    employeeDAO = new EmployeeDAO();
+  }
+ public void insert() {
+   employeeDAO.insert();
+ }
+}
+
+
+
+public class EmployeeDAO {
+ 
+public void insert() {
+ //insert into Employee Table
+}
+
+public void updateEmployeeName() {
+  //updating employee name;
+}
+
+public Employee getEmployeeDetails(String emailID) {
+ 
+  //get employee details based on Emp emailID
+  return new Employee();
+}
+
+
+public Employee getEmployeeDetails(int empID) {
+ 
+  //get employee details based on Emp ID
+  return new Employee();
+}
+
+}
+
+
+
+Scenario 2::
+
+public class ProductDAO {
+
+ public Product getProduct(int productid) {
+  //get product based on product id and return
+  return new Product();
+ }
+}
+
+
+public class Payment {
+
+ public boolean makePayment() {
+   //initiate payment and return true if success
+   return true;
+ }
+}
+
+public class Invoice {
+
+  public void generateInvoice() {
+   //this will generate the invoice
+ }
+}
+
+public class SendNotification {
+
+public void sendNotification() {
+ //this will send notification to customer on mobile
+}
+
+}
+
+
+public class OrderFacade {
+
+ProductDAO productDao;
+Invoice invoice;
+Payment payment;
+SendNotification notification;
+
+public OrderFacade() {
+  productDao = new ProductDAO();
+  invoice = new Invoice();
+  payment = new Payment();
+  notification = new SendNotification();
+}
+
+public void createOrder() {
+ Product product = productDao.getProduct(121);
+ payment.makePayment();
+ invoice.generateInvoice();
+ notification.sendNotification();
+ //order creation successfull
+}
+
+}
+
+
+public class OrderClient {
+
+ public static main(String args[]) {
+   OrderFacade orderFacade = new OrderFacade();
+   orderFacade.createOrder();
+ }
+}
+
+
+
+Scenario 3: Facade using other Facade
+
+              ------------------------>
+Client---> Facade1----> Facde2         Facde3
+              | 
+              |
+             System
